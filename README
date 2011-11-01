@@ -1,0 +1,6 @@
+kmeans.oct
+----------
+
+Implementation of the k-Means algorithm in Octave.
+
+Author: jeanfgobin@gmail.com, feel free to contact me.

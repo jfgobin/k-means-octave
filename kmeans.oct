@@ -1,0 +1,48 @@
+function Y=distance(X1,X2)
+# Returns the distance between X1 and X2
+Y=((sum(((X1-X2).*(X1-X2))')).^(1/2))';
+endfunction
+
+function NEWCENTROIDS=kmeanstep(DATA,CENTROIDS)
+  # Computes the new centroids coordinates
+  # Each line in DATA is a feature vector
+  NEWCENTROIDS=0*CENTROIDS;
+  NFEATURE=size(DATA)(2);
+  NLINE=size(DATA)(1);
+  NCENTROIDS=size(CENTROIDS)(1);
+  COUNTPOINTS=zeros(NCENTROIDS,1);
+  # For each line in DATA, we'll replicate the line and compute the distance to each centroid
+  for INDEX = 1:NLINE
+   CURLINE=DATA(INDEX,:);
+   DIST=distance(repmat(CURLINE,NCENTROIDS,1),CENTROIDS);
+   [DM,DMINDEX]=min(DIST);
+   NEWCENTROIDS(DMINDEX,:)=NEWCENTROIDS(DMINDEX,:)+CURLINE;
+   COUNTPOINTS(DMINDEX)+=1;
+  end
+  for INDEX = 1:NCENTROIDS
+   # For each centroids, let's divide the feature-coordinates by the number of points
+   # attached. If the count is 0 (there is no point attached), let's copy the old vector
+   # Another possibility is to remove the centroids
+   if COUNTPOINTS(INDEX) == 0
+     NEWCENTROIDS(INDEX,:)=CENTROIDS(INDEX,:);
+   else
+     NEWCENTROIDS(INDEX,:)=NEWCENTROIDS(INDEX,:)/COUNTPOINTS(INDEX);
+   end
+  end	
+endfunction
+
+function Y=kmeans(DATA,NCENTROIDS, THRESH=1e-6)
+ # Run the k-means algorithm until the difference between two iterations
+ # is below a given threshold 
+ # Each line in DATA is a feature vector
+ MINFEATURE=min(DATA);
+ RANGEFEATURE=max(DATA)-min(DATA);
+ NFEATURE=size(DATA)(2)
+ CURCENTROIDS=repmat(MINFEATURE,NCENTROIDS,1)+repmat(RANGEFEATURE,NCENTROIDS,1).*rand(NCENTROIDS,NFEATURE);
+ NEWCENTROIDS=kmeanstep(DATA,CURCENTROIDS);
+ while max(max(abs(NEWCENTROIDS-CURCENTROIDS))) > THRESH
+  CURCENTROIDS=NEWCENTROIDS;
+  NEWCENTROIDS=kmeanstep(DATA,CURCENTROIDS);
+ end
+ Y=NEWCENTROIDS;
+endfunction
